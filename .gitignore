@@ -1,3 +1,4 @@
-*
-!*.py
-!.gitignore
+*.tmp
+.venv
+.env
+settings.py

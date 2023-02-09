@@ -1,0 +1,4 @@
+{
+    "fileUrl" : "", //url to file you whant to download
+    "iszip" : true
+}
