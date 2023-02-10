@@ -1,4 +1,6 @@
 *.tmp
 .venv
 .env
-settings.py
+*.spec
+bin
+__pycache__/*

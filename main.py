@@ -5,10 +5,9 @@ from PyQt5.QtWidgets import *
 import requests
 from zipfile import ZipFile
 import zipfile
-import hjson
-
-
-url: list[str] = ["http://www.ovh.net/files/10Mb.dat"]
+import os
+import settings as config
+import threading
 
 
 # Subclass QMainWindow to customize your application's main window
@@ -48,20 +47,30 @@ class MainWindow(QMainWindow):
 
     def download(self):
         try:
-            for item in url:
-                r = requests.get(item, stream=True)
-                fileName = "file"
-                progress = 0
-                with open(f"{fileName}.tmp", "wb") as file:
-                    for data in r.iter_content():
-                        progress += len(data)
-                        self.pbar.setValue(progress)
-                        print(progress)
-                        file.write(data)
-                print("done")
-                
+            print("downloading")
+            url = config.url
+            r = requests.get(url, stream=True)
+            filesize = requests.head(url)
+            fileName = os.path.basename(url).split("/")[-1]
+            progress = 0
+            lastint = 0
+            with open(f"{fileName}", "wb") as file:
+                for data in r.iter_content():
+                    progress += len(data)
+
+                    c = int(progress / int(filesize.headers["content-length"]) * 100)
+                    if lastint != c:
+                        if c > 100:
+                            self.pbar.setValue(100)
+                        else:
+                            self.pbar.setValue(c)
+                            print(c)
+                            lastint = c
+                    file.write(data)
+            print("done")
+            if config.iszip:
                 try:
-                    with ZipFile(f"{fileName}.tmp", "r") as f:
+                    with ZipFile(f"{fileName}", "r") as f:
                         f.extractall(fileName)
                 except (zipfile.BadZipFile, FileNotFoundError) as e:
                     print("not a zip file or file not found", e)
